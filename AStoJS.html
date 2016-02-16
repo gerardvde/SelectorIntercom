@@ -1,0 +1,411 @@
+<!-- saved from url=(0013)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Intercom</title>
+<style>
+#htmllayer {
+	background-color: white;
+	z-index: 1;
+}
+
+#flashlayer {
+	margin: auto;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	width: 215px;
+	height: 138px;
+	background-color: white;
+	z-index: 2;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	width: 215px;
+	height: 138px;
+	background-color: white;
+	z-index: 2;
+	visibility: hidden;
+}
+
+#talking {
+	width: 10px;
+	height: 10px;
+	background: green;
+	-moz-border-radius: 50px;
+	-webkit-border-radius: 50px;
+	border-radius: 50px;
+}
+
+#audiolevel {
+	width: 10px;
+	height: 10px;
+	background: red;
+}
+
+body {
+	font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans",
+		"DejaVu Sans", Verdana, sans-serif;
+	font-size: small;
+	background-color: #5D4E4F
+}
+</style>
+<script language="JavaScript">
+	var flashReady = false;
+	var flashlayer;
+	var htmllayer;
+	var inputcontainer;
+	var intercom;
+	var starttalkbutton;
+	var stoptalkbutton;
+	var log;
+	function initPage() {
+		flashReady = true;
+		flashlayer = document.getElementById("flashlayer");
+		htmllayer = document.getElementById("htmllayer");
+		log = document.getElementById("log");
+		intercom = document.getElementById("intercom");
+		starttalkbutton = document.getElementById("starttalkbutton");
+		stoptalkbutton = document.getElementById("stoptalkbutton");
+		starttalkbutton.disabled = true;
+		stoptalkbutton.disabled = true;
+		showAudioActivity(12);
+	}
+	function executeMethod() {
+		var input;
+		var method = document.getElementById('method').value;
+		var param = '';
+		var rtmppublish = document.getElementById('rtmppublish').value;
+		var rtmpplay = document.getElementById('rtmpplay').value;
+		var gain = document.getElementById('gain').value;
+		var streamplay = document.getElementById('streamplay').value;
+		var streampublish = document.getElementById('streampublish').value;
+		var inputSelector = document.getElementById('inputselector');
+		if (inputSelector) {
+			input = inputSelector.value;
+		}
+		switch (method) {
+		case 'setAudioInput':
+			if (!input) {
+				alert('not a valid audio input' + param);
+				return;
+			}
+			param = input;
+			break;
+		case 'connectRTMPPublish':
+			param = rtmppublish + '|' + streampublish;
+			break;
+		case 'connectRTMPPlay':
+			param = rtmpplay + '|' + streamplay;
+			break;
+		case 'startPlaying':
+			param = streamplay;
+			break;
+		case 'setGain':
+			param = gain;
+			break;
+		case 'setVolume':
+			param = gain;
+			break;
+		case 'mutePlayback':
+			param = 'true';
+			break;
+		case 'unmutePlayback':
+			method = 'mutePlayback';
+			param = 'false';
+			break;
+		case 'showAudioAccess':
+			showFlash()
+			break
+		}
+
+		executeMethodInSWF(method, param);
+	}
+	/*
+		the name of this function "executeMethodInSWF" is default, overrideb by functionToCall param in Flashvars
+	 */
+	function executeMethodInSWF(method, param) {
+		var result = ' executed ';
+
+		try {
+			var result = intercom.executeMethodInSWF(method, param);
+			var tmpArray = result.split(' ')
+			var status;
+			if (tmpArray[0] == 'nok') {
+				status = 'Failed to execute in SWF:';
+			} else {
+				status = ' Executed in  SWF:';
+			}
+			if (!param) {
+				param = "";
+			}
+			log.value += "Result from AS " + status + "->" + method + " "
+					+ param + "->" + result + "\n";
+		} catch (error) {
+			log.value += "Failed to execute Error ->" + error + "\n";
+
+		}
+		switch (method) {
+		case "listAudioInputs":
+			createAudioInputs(result)
+			break;
+		case "stopTalking":
+			setIndicatorColor('green');
+			stoptalkbutton.disabled = true;
+			starttalkbutton.disabled = false;
+			break;
+
+		}
+	}
+	function createAudioInputs(inputs) {
+
+		var inputsContainer = document.getElementById('audioinputs');
+
+		var inputArray = inputs.split('|');
+		var select = '<select id="inputselector">';
+		for (i = 0; i < inputArray.length; i++) {
+			input = inputArray[i];
+			select += '<option value="'+input+'">' + input + '</option>';
+		}
+		select += '</select>';
+		inputsContainer.innerHTML = select;
+	}
+	/*
+	callbacks  from AS
+	onRTMPConnected
+	onRTMPNotConnected
+	onRTMPFailed
+	onAudioAccess "true" / "false"
+	onSettingsClosed 
+	onSWFReady
+	onPublishStarted
+	onPublishStopped
+	onPublishFailed
+	onShowMessage >param
+	 */
+	function onSWFReady(objectID) {
+		alert(objectID);
+		log.value += "onSWFReady " + objectID + "\n";
+		//For testing
+		showFlash();
+	}
+	function executeMethodFromSWF(objectId, method, param) {
+
+		switch (method) {
+		case 'onSWFReady':
+			intercom.executeMethodInSWF('listAudioInputs', '');
+			break;
+		case 'onSettingsClosed':
+			hideFlash();
+			break;
+		case 'onRTMPConnected':
+			if (param == 'publish') {
+				starttalkbutton.disabled = false;
+				stoptalkbutton.disabled = true;
+			}
+			break;
+		case 'onRTMPNotConnected':
+			if (param == 'publish') {
+				starttalkbutton.disabled = true;
+				stoptalkbutton.disabled = true;
+			}
+			break;
+		case 'onRTMPFailed':
+			if (param == 'publish') {
+				starttalkbutton.disabled = true;
+				stoptalkbutton.disabled = true;
+			}
+			break;
+		case 'onShowMessage':
+			break;
+		case 'onAudioAccess':
+			break;
+		case 'onAudioSelected':
+			break
+		case 'onAudioActivity':
+			showAudioActivity(param);
+			break;
+		case 'onPublishStarted':
+			setIndicatorColor('red');
+			stoptalkbutton.disabled = false;
+			starttalkbutton.disabled = true;
+			break;
+		case 'onPublishStopped':
+			setIndicatorColor('green');
+			stoptalkbutton.disabled = true;
+			starttalkbutton.disabled = false;
+			break;
+		case 'onPublishFailed':
+			setIndicatorColor('green');
+			stoptalkbutton.disabled = true;
+			starttalkbutton.disabled = false;
+			alert('Someone else is talking')
+			break;
+		case 'onPlayFailed':
+			break;
+		case 'onPlayStarted':
+			break;
+		case 'onPlayStopped':
+			break;
+		default:
+
+		}
+
+		log.value += "Callback from AS->" + objectId + ":" + method + ":"
+				+ param + "\n";
+		//hideFlash();
+		return 'ok';
+	}
+	/*
+		stream is optionaö
+	 */
+	function startTalking() {
+		var stream = document.getElementById('streampublish').value;
+		executeMethodInSWF('startTalking', stream);
+	}
+	function stopTalking() {
+		executeMethodInSWF('stopTalking');
+	}
+	function showFlash() {
+		flashlayer.style.visibility = "visible";
+	}
+	function hideFlash() {
+		flashlayer.style.visibility = "hidden";
+	}
+	function setIndicatorColor(color) {
+		var indicator = document.getElementById('talking');
+		indicator.style.background = color;
+
+	}
+	function showAudioActivity(param) {
+		var level = document.getElementById('audiolevel');
+		if (param > 0) {
+			level.style.width = param * 10;
+		}
+	}
+</script>
+</head>
+<body onload="initPage();">
+	<div id='flashlayer'>
+		<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
+			codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=21,0,0,0"
+			id="Intercom" width="215" height="138" align="middle">
+			<param name="allowScriptAccess" value="all" />
+			<param name="movie" value="intercom.swf" />
+			<param name="quality" value="high" />
+			<param name="bgcolor" value="#ff0000" />
+			<param name="flashvars"
+				value="readyFunction=onSWFReady&amp;functionToCall=executeMethodFromSWF&amp;debug=true" />
+			<embed src="intercom.swf" quality="high" bgcolor="#ffffff"
+				FlashVars="readyFunction=onSWFReady&amp;functionToCall=executeMethodFromSWF&amp;debug=true"
+				width="215" height="138" swLiveConnect=true id="intercom"
+				name="intercom" align="middle" allowScriptAccess="always"
+				type="application/x-shockwave-flash"
+				pluginspage="http://www.adobe.com/go/getflashplayer" />
+		</object>
+	</div>
+	<div id='htmllayer'>
+		<form>
+			<table width="100%" border="0" bgcolor="#5D4E4F">
+				<tr>
+					<td valign="middle" align="center">
+						<table width="auto" border="0" bgcolor="#E4D9D9">
+							<tbody>
+								<tr>
+									<td width="150">RTMPublish :</td>
+									<td colspan="3"><input type="text" size="150"
+										id="rtmppublish" value="rtmp://192.168.2.115/smt/out"></td>
+									<td></td>
+								</tr>
+								<tr>
+									<td>Publish Stream:</td>
+									<td colspan="3"><input type="text" size="50"
+										id="streampublish" value="outstream"></td>
+									<td></td>
+									<td></td>
+								</tr>
+								<tr>
+									<td width="150	">RTMP Play :</td>
+									<td colspan="3"><input type="text" size="150"
+										id="rtmpplay" value="rtmp://192.168.2.115/smt/in"></td>
+									<td></td>
+								</tr>
+								<tr>
+									<td>Play Stream:</td>
+									<td colspan="3"><input type="text" size="50"
+										id="streamplay" value="instream"></td>
+									<td></td>
+									<td></td>
+								</tr>
+								<tr>
+									<td>Method:</td>
+									<!--The following methods can be called
+			results are returned immediately by:
+				listAudioInputs -> string with audioinputs 
+				askAudioAccess Boolean
+			the other methods will return 'ok' if the method
+			is available and can be exected and 'nok' when method not availabe or wrong parameters
+	-->
+									<td><select id='method'>
+											<option value="jsready">tell ready</option>
+											<option value="connectRTMPPlay">connect to RTMP play</option>
+											<option value="connectRTMPPublish">connect to RTMP
+												publish</option>
+											<option value="disconnectRTMPPlay">disconnect play</option>
+											<option value="disconnectRTMPPublish">disconnect
+												publish</option>
+											<option value="startPlaying">start playing</option>
+											<option value="stopPlaying">stop playing</option>
+											<option value="listAudioInputs">list audio inputs</option>
+											<option value="setAudioInput">set audioinput</option>
+											<option value="setGain">set gain</option>
+											<option value="setVolume">set volume</option>
+											<option value="mutePlayback">mute playback</option>
+											<option value="unmutePlayback">unmute playback</option>
+											<option value="askAudioAccess">has audio Access?</option>
+											<option value="getCurrentAudioInput">get current
+												audio input</option>
+											<option value="showAudioAccess">show Access PopUp</option>
+									</select>
+										<button type="button" onclick="executeMethod();">execute</button></td>
+									<td>Gain/Volume:<input type="text" size="10" id="gain"
+										value="50"></td>
+									<td><div id="audioinputs"></div></td>
+								</tr>
+								<tr>
+									<td align="right">
+										<div id='talking'></div>
+									</td>
+									<td>
+										<button type="button" onmousedown="startTalking();"
+											id="starttalkbutton" disabled="disabled">talk</button>
+										<button type="button" onmousedown="stopTalking();"
+											id="stoptalkbutton" disabled="disabled">stop</button>
+									</td>
+									<td><div id='audiolevel'></div></td>
+									<td></td>
+								</tr>
+								<tr>
+									<td>
+										<button type="button" onclick="log.value=''" id="clearbutton">clear
+											log</button>
+									</td>
+									<td colspan="3"><textarea id="log" rows="5" cols="150"></textarea>
+									</td>
+									<td></td>
+									<td></td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+			</table>
+			</table>
+	</div>
+</body>
+</html>
