@@ -1,4 +1,5 @@
 ﻿package {
+	import flash.net.SharedObject;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
 	import flash.text.TextField;
@@ -94,8 +95,25 @@
 			initJStoAS();
 			checkParameter();
 			tellReady();
+			getAccess();
 			_microphone = Microphone.getMicrophone();
 			setUpMicrophone();
+		}
+
+		private function getAccess() : void 
+		{
+			try{
+				var so:SharedObject=SharedObject.getLocal('Selector_Intercom',"/");
+				if(!so.data.allowed)
+				{
+					Security.showSettings(SecurityPanel.PRIVACY);
+					so.data.allowed=true;
+					so.flush();
+				}
+			}
+			catch(e:Error) {
+				Security.showSettings(SecurityPanel.PRIVACY);
+			}
 		}
 
 		
@@ -147,6 +165,7 @@
 			_jsCommunicator.addMethod(JS2AS.SET_VOLUME, setVolume);
 			_jsCommunicator.addMethod(JS2AS.MUTE_PLAYBACK, mutePlayBack);
 		}
+
 
 		private function checkParameter() : void
 		{
@@ -415,7 +434,7 @@
 
 		private function showAudioAccess(param : String = null) : String
 		{
-			Security.showSettings(SecurityPanel.MICROPHONE);
+			Security.showSettings(SecurityPanel.PRIVACY);
 			addEventListener(MouseEvent.MOUSE_OVER, onSettingsClosed);
 			addEventListener(MouseEvent.MOUSE_MOVE, onSettingsClosed);
 			return 'ok';
