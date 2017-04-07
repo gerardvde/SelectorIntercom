@@ -21,5 +21,6 @@ package
 		public static const ON_SHOW_MESSAGE : String = 'onShowMessage';
 		public static const ON_READY : String = 'onSWFReady';
 		public static const ON_AUDIO_ACTIVITY : String = 'onAudioActivity';
+
 	}
 }

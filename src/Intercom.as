@@ -29,7 +29,6 @@
 		private static const WAIT_DELAY : Number = 5000;
 
 		private var _jsCommunicator : JSCommunicator;
-
 		private var _ready : Boolean;
 		private var _netConnectionPublish : NetConnection;
 		private var _netConnectionPlay : NetConnection;
@@ -49,7 +48,7 @@
 		private var _isPublishing : Boolean = false;
 		private var _timeOutTimer : Timer;
 
-		public function Intercom() 
+		public function Intercom()
 		{
 			var sprite : Sprite = new Sprite();
 			with(sprite.graphics) {
@@ -65,9 +64,9 @@
 			addEventListener(Event.ADDED_TO_STAGE, initUI);
 		}
 
-		
-		
-		private function makeCloseButton() : void 
+
+
+		private function makeCloseButton() : void
 		{
 			var sprite : Sprite = new Sprite();
 			with(sprite.graphics) {
@@ -75,7 +74,7 @@
 				drawCircle(215 / 2, 138 / 2, 138 / 4);
 				endFill();
 				beginFill(0xffffff, 1);
-				drawRect(215 / 2 - 30, 138 / 2 - 5, 60, 10);			
+				drawRect(215 / 2 - 30, 138 / 2 - 5, 60, 10);
 			}
 			addChild(sprite);
 			sprite.buttonMode = true;
@@ -83,12 +82,12 @@
 			sprite.addEventListener(MouseEvent.MOUSE_DOWN, onClose);
 		}
 
-		private function onClose(event : MouseEvent) : void 
+		private function onClose(event : MouseEvent) : void
 		{
 			_jsCommunicator.call(AS2JS.ON_SETTINGS_CLOSED);
 		}
 
-		private function initUI(event : Event) : void 
+		private function initUI(event : Event) : void
 		{
 			addEventListener(StatusEvent.STATUS, onMikeStatus);
 			_numChildren = stage.numChildren;
@@ -100,7 +99,7 @@
 			setUpMicrophone();
 		}
 
-		private function getAccess() : void 
+		private function getAccess() : void
 		{
 			try{
 				var so:SharedObject=SharedObject.getLocal('Selector_Intercom',"/");
@@ -116,8 +115,8 @@
 			}
 		}
 
-		
-		private function onMicrophoneStatus(event : StatusEvent) : void 
+
+		private function onMicrophoneStatus(event : StatusEvent) : void
 		{
 			if(!_microphone ) {
 				_jsCommunicator.call(AS2JS.ON_AUDIO_SELECTED, 'none');
@@ -130,7 +129,7 @@
 			}
 		}
 
-		private function tellReady() : void 
+		private function tellReady() : void
 		{
 			_jsCommunicator.call(AS2JS.ON_SHOW_MESSAGE, 'FlashVars ReadyFuntion:' + _readyFunction);
 			if(_readyFunction) {
@@ -172,12 +171,12 @@
 			if (loaderInfo.parameters.debug != undefined && loaderInfo.parameters.debug == "true") {
 				_debugMode = true;
 			}
- 
+
 			if(loaderInfo.parameters.readyFunction != undefined) {
 				_readyFunction = cleanEIString(loaderInfo.parameters.readyFunction);
 			}
 			if(loaderInfo.parameters.functionToCall != undefined) {
-				
+
 				_jsCommunicator.jsMethod = loaderInfo.parameters.functionToCall;
 			}
 			if(_debugMode) {
@@ -192,7 +191,7 @@
 				_logText.text += msg + "\n";
 		}
 
-		private function setDebugger() : void 
+		private function setDebugger() : void
 		{
 			_logText = new TextField();
 			addChild(_logText);
@@ -212,7 +211,7 @@
 			_jsCommunicator.call(AS2JS.ON_SHOW_MESSAGE, 'Error ' + event.text);
 		}
 
-		private function stopTalking(param : String = null) : String 
+		private function stopTalking(param : String = null) : String
 		{
 			if(_publishStream) {
 				_publishStream.close();
@@ -224,7 +223,7 @@
 			return 'ok';
 		}
 
-		private function setAudioInput(param : String) : String 
+		private function setAudioInput(param : String) : String
 		{
 			var micNames : Array = Microphone.names;
 			var index : int = micNames.indexOf(param);
@@ -242,12 +241,12 @@
 				_jsCommunicator.call(AS2JS.ON_AUDIO_ACCESS, 'false');
 				return 'nok no audio access';
 			}
-			
+
 			_jsCommunicator.call(AS2JS.ON_AUDIO_SELECTED, _microphone.name);
 			return 'ok';
 		}
 
-		private function setUpMicrophone() : void 
+		private function setUpMicrophone() : void
 		{
 			_microphone.addEventListener(StatusEvent.STATUS, onMicrophoneStatus);
 			_microphone.setLoopBack(true);
@@ -255,7 +254,7 @@
 			_microphone.addEventListener(ActivityEvent.ACTIVITY, onMicActivity);
 		}
 
-		private function setGain(param : String) : String 
+		private function setGain(param : String) : String
 		{
 			if(!_microphone) {
 				return 'nok no audio selected';
@@ -267,7 +266,7 @@
 			return 'ok ' + _microphone.gain;
 		}
 
-		private function setVolume(param : String) : String 
+		private function setVolume(param : String) : String
 		{
 			if(!_playStream) {
 				return 'nok no playStream';
@@ -277,14 +276,14 @@
 			return 'ok ' + param;
 		}
 
-		private function mutePlayBack(param : String) : String 
+		private function mutePlayBack(param : String) : String
 		{
 			(param == "true " ) ? _playbackMuted = true : _playbackMuted = false;
 			checkMuting();
 			return 'ok';
 		}
 
-		private function checkMuting() : void 
+		private function checkMuting() : void
 		{
 			if(!_playStream) {
 				return;
@@ -292,12 +291,12 @@
 			(_playbackMuted && _isPublishing) ? _playStream.soundTransform = new SoundTransform(0) : _playStream.soundTransform = new SoundTransform(_playbackVolume);
 		}
 
-		private function onMicActivity(event : ActivityEvent) : void 
+		private function onMicActivity(event : ActivityEvent) : void
 		{
 			_jsCommunicator.call(AS2JS.ON_AUDIO_ACTIVITY, String(_microphone.activityLevel));
 		}
 
-		private function startTalking(stream : String) : String 
+		private function startTalking(stream : String) : String
 		{
 			if(!_netConnectionPublish || !_netConnectionPublish.connected ) {
 				return 'nok no publish connection';
@@ -319,7 +318,7 @@
 			return 'ok';
 		}
 
-		private function createPublishStream() : void 
+		private function createPublishStream() : void
 		{
 			_publishStream = new NetStream(_netConnectionPublish);
 			_publishStream.addEventListener(NetStatusEvent.NET_STATUS, onNetStreamStatus);
@@ -329,7 +328,7 @@
 			checkMuting();
 		}
 
-		private function startPlaying(stream : String) : String 
+		private function startPlaying(stream : String) : String
 		{
 			if(!_netConnectionPlay || !_netConnectionPlay.connected) {
 				return 'nok no valid playconnection';
@@ -344,7 +343,7 @@
 			return 'nok no valid playstream name';
 		}
 
-		private function stopPlaying(stream : String) : String 
+		private function stopPlaying(stream : String) : String
 		{
 			if(_playStream) {
 				_playStream.close();
@@ -440,7 +439,7 @@
 			return 'ok';
 		}
 
-		private function onSettingsClosed(event : Event = null) : void 
+		private function onSettingsClosed(event : Event = null) : void
 		{
 			removeEventListener(MouseEvent.MOUSE_OVER, onSettingsClosed);
 			removeEventListener(MouseEvent.MOUSE_MOVE, onSettingsClosed);
@@ -454,7 +453,7 @@
 			_jsCommunicator.call(AS2JS.ON_SETTINGS_CLOSED);
 		}
 
-		private function onMikeStatus(event : StatusEvent) : void 
+		private function onMikeStatus(event : StatusEvent) : void
 		{
 			switch(event.code) {
 				case "Microphone.Muted":
@@ -473,7 +472,7 @@
 		}
 
 		/*
-		 * 
+		 *
 		 */
 		private function get hasPublishConnection() : Boolean {
 			if(!_netConnectionPublish)
@@ -487,7 +486,7 @@
 			return _netConnectionPlay.connected;
 		}
 
-		private function initConnectionPublish(param : String) : void 
+		private function initConnectionPublish(param : String) : void
 		{
 			if(!_netConnectionPublish) {
 				_netConnectionPublish = new NetConnection();
@@ -502,7 +501,7 @@
 			_timeOutTimer.start()
 		}
 
-		private function initConnectionPlay(param : String) : void 
+		private function initConnectionPlay(param : String) : void
 		{
 			if(!_netConnectionPlay) {
 				_netConnectionPlay = new NetConnection();
@@ -522,7 +521,7 @@
 			//Logger.writeLog("ConnectionManger SecurityErrorEvent ");
 		}
 
-		private function onAsyncError(event : AsyncErrorEvent) : void 
+		private function onAsyncError(event : AsyncErrorEvent) : void
 		{
 			//Logger.writeLog("ConnectionManger AsyncErrorEvent ", event.error);
 		}
@@ -549,13 +548,13 @@
 				case "NetConnection.Connect.Closed":
 					_jsCommunicator.call(AS2JS.ON_RTMP_NOT_CONNECTED, type + ":" + netConnection.uri);
 					break;
-				
+
 				default:
 					_jsCommunicator.call(AS2JS.ON_SHOW_MESSAGE, e.info['code']);
 			}
 		}
 
-		private function onTimeOut(event : TimerEvent) : void 
+		private function onTimeOut(event : TimerEvent) : void
 		{
 			_jsCommunicator.call(AS2JS.ON_RTMP_NOT_CONNECTED, 'timeout');
 		}
@@ -590,7 +589,7 @@
 			}
 		}
 
-		private function createPlayStream() : void 
+		private function createPlayStream() : void
 		{
 			_playStream = new NetStream(_netConnectionPlay);
 			_playStream.addEventListener(NetStatusEvent.NET_STATUS, onNetStreamStatus);

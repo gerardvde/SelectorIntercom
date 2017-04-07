@@ -9,7 +9,6 @@
 	background-color: white;
 	z-index: 1;
 }
-
 #flashlayer {
 	margin: auto;
 	position: absolute;
@@ -181,7 +180,7 @@ body {
 	onRTMPNotConnected
 	onRTMPFailed
 	onAudioAccess "true" / "false"
-	onSettingsClosed 
+	onSettingsClosed
 	onSWFReady
 	onPublishStarted
 	onPublishStopped
@@ -346,7 +345,7 @@ body {
 									<td>Method:</td>
 									<!--The following methods can be called
 			results are returned immediately by:
-				listAudioInputs -> string with audioinputs 
+				listAudioInputs -> string with audioinputs
 				askAudioAccess Boolean
 			the other methods will return 'ok' if the method
 			is available and can be exected and 'nok' when method not availabe or wrong parameters
@@ -371,7 +370,7 @@ body {
 											<option value="getCurrentAudioInput">get current
 												audio input</option>
 											<option value="showAudioAccess">show Privacy Access PopUp</option>
-									
+
 									</select>
 										<button type="button" onclick="executeMethod();">execute</button></td>
 									<td>Gain/Volume:<input type="text" size="10" id="gain"

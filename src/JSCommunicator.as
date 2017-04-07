@@ -17,7 +17,6 @@ package
 		private var _jsMethod:String=JSMETHOD;
 		private var _objectID: String
 		public var logText : TextField;
-
 		public function JSCommunicator( onResult:Function = null )
 		{
 			_methods = new Dictionary( true );
@@ -88,7 +87,7 @@ package
 			{
 				try
 				{
-					
+
 					ExternalInterface.call( method, param );
 
 				}
@@ -108,7 +107,7 @@ package
 			{
 				try
 				{
-					
+
 					var result:String = ExternalInterface.call( _jsMethod,_objectID, method, param );
 					if( _onResult!=undefined )
 					{
@@ -122,7 +121,7 @@ package
 				}
 			}
 		}
-		
+
 		public function set jsMethod(jsMethod : String) : void
 		{
 			_jsMethod = jsMethod;

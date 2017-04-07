@@ -6,6 +6,7 @@ package
 	 */
 	public final class JS2AS
 	{
+
 		public static const CONNECT_RTMP_PLAY : String = 'connectRTMPPlay';
 		public static const CONNECT_RTMP_PUBLISH : String = 'connectRTMPPublish';
 		public static const DISCONNECT_RTMP_PLAY : String = 'disconnectRTMPPlay';
